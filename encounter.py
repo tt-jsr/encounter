@@ -5,7 +5,7 @@ import sys
 
 current_round="current_round"
 current_player_idx="current_player_idx"
-characters="characters"
+players="players"
 max_hp="max-hp"
 ac="ac"
 initiative="initiative"
@@ -19,7 +19,7 @@ root={
 current_round:0,
 current_player_idx:0,
 time:0,
-characters:[
+players:[
     {
         name:"Dimble",
         max_hp:39,
@@ -161,31 +161,31 @@ def IncRound():
     root[current_round] += 1
     root[time] += 6
 
-def GetCharacterList():
-    return root[characters]
+def GetPlayerList():
+    return root[players]
 
 def GetCurrentPlayer():
     idx = root[current_player_idx]
-    return GetCharacterList()[idx]
+    return GetPlayerList()[idx]
 
 def SubtractHitPoints(n):
     cp = GetCurrentPlayer()
     cp[current_hp] -= n
 
 def Initiative():
-    for c in GetCharacterList():
+    for c in GetPlayerList():
         ans = raw_input("{0}({1}): ".format(c[name], c[initiative]))
         try:
             n = int(ans)
             c[initiative] = n
         except:
             pass
-    GetCharacterList().sort(reverse=True, key=InitiativeSortFunc)
+    GetPlayerList().sort(reverse=True, key=InitiativeSortFunc)
 
 def ShowAllPlayers():
     ClearScreen()
     CursorPos(1, 1)
-    cl = GetCharacterList()
+    cl = GetPlayerList()
     cp = GetCurrentPlayer()
     for c in cl:
         percent = 0
@@ -201,7 +201,7 @@ def ShowAllPlayers():
 def NextPlayer():
     idx = root[current_player_idx]
     idx += 1
-    cl = GetCharacterList()
+    cl = GetPlayerList()
     if idx == len(cl):
         IncRound()
         idx = 0
@@ -209,8 +209,8 @@ def NextPlayer():
     return GetCurrentPlayer()
 
 # Promps the user for a player and returns it
-def SelectCharacter():
-    cl = GetCharacterList()
+def SelectPlayer():
+    cl = GetPlayerList()
     counter=1
     for c in cl:
         print "{0}. {1}".format(counter, c[name])
@@ -249,7 +249,7 @@ def ShowCurrentPlayer():
     ClearScreen()
     CursorPos(1, 1)
     cp = GetCurrentPlayer()
-    cl = GetCharacterList()
+    cl = GetPlayerList()
     pos = "{0}/{1}".format(root[current_player_idx]+1, len(cl))
     percent = 0
     if cp[max_hp] != 0:
@@ -271,8 +271,8 @@ def Menu():
         print "n. Next player"
         print "h. Hit"
         print "e. Edit Note"
-        print "E. Edit Character note"
-        print "a. Show all characters"
+        print "E. Edit Player note"
+        print "a. Show all players"
         print "i. Initiative"
         print "u. Open webpage"
         #print "l. Load"
@@ -298,7 +298,7 @@ def Menu():
             EditNote(cp)
             ShowCurrentPlayer()
         if ans == "E":
-            cp = SelectCharacter()
+            cp = SelectPlayer()
             if cp:
                 EditNote(cp)
             ShowCurrentPlayer()
