@@ -1,6 +1,7 @@
 #! /usr/bin/python
 import json
 import os
+import sys
 
 current_round="current_round"
 current_player_idx="current_player_idx"
@@ -135,10 +136,10 @@ def InitiativeSortFunc(c):
     return c[initiative]
 
 def ClearScreen():
-    print "\033[2J"
+    sys.stdout.write("\033[2J")
 
 def CursorPos(x, y):
-    print "\033[{0};{1}H".format(x, y)
+    sys.stdout.write("\033[{0};{1}H".format(x, y))
 
 def Save():
     s =json.dumps(root, sort_keys=True, indent=4, separators=(',', ': '))
@@ -186,11 +187,15 @@ def ListCharacters():
     ClearScreen()
     CursorPos(1, 1)
     cl = GetCharacterList()
+    cp = GetCurrentPlayer()
     for c in cl:
         percent = 0
         if c[max_hp] != 0:
             percent = int(float(c[current_hp])/float(c[max_hp])*100.0)
-        print "{0} ac={1} hp:{2} max-hp:{3} {4}% init:{5}".format(c[name], c[ac], c[current_hp], c[max_hp], percent, c[initiative])
+        star = ""
+        if cp == c:
+            star="*"
+        print "{6}{0} ac={1} hp:{2}/{3} {4}% init:{5}".format(c[name], c[ac], c[current_hp], c[max_hp], percent, c[initiative], star)
         print GetNote(c)
     raw_input()
 
@@ -205,6 +210,7 @@ def NextPlayer():
     Save()
     return GetCurrentPlayer()
 
+# Promps the user for a player and returns it
 def SelectCharacter():
     cl = GetCharacterList()
     counter=1
@@ -221,6 +227,13 @@ def SelectCharacter():
 
 def EditNote(cp):
     path = "vim {0}-notes.txt".format(cp[name])
+    f = "{0}-notes.txt".format(cp[name])
+    try:
+        f = open(f, "a")
+        f.write("Round {0}: \n".format(GetRound()))
+        f.close()
+    except:
+        pass
     os.system(path)
 
 def GetNote(cp):
@@ -246,9 +259,7 @@ def ShowCurrentPlayer():
     print """Round: {4} time: {7} {6}secs
 Name:{0}
 ac:{1}
-max-hp:{2}
-current-hp:{3}
-{5}%\n""".format(cp[name], cp[ac], cp[max_hp],cp[current_hp], GetRound(), percent, root[time], pos)
+hp:{3}/{2} {5}%\n""".format(cp[name], cp[ac], cp[max_hp],cp[current_hp], GetRound(), percent, root[time], pos)
     s = GetNote(cp)
     print s
     print
@@ -274,6 +285,7 @@ def Menu():
             ShowCurrentPlayer()
         if ans == "a":
             ListCharacters()
+            ShowCurrentPlayer()
         if ans == "n":
             NextPlayer()
             ShowCurrentPlayer()
@@ -281,6 +293,7 @@ def Menu():
             hp = raw_input("Hit points: ")
             if hp != "" and hp != '\n':
                 SubtractHitPoints(int(hp))
+                ShowCurrentPlayer()
         if ans == "e":
             cp = GetCurrentPlayer()
             EditNote(cp)
