@@ -181,9 +181,8 @@ def Initiative():
         except:
             pass
     GetCharacterList().sort(reverse=True, key=InitiativeSortFunc)
-    Save()
 
-def ListCharacters():
+def ShowAllPlayers():
     ClearScreen()
     CursorPos(1, 1)
     cl = GetCharacterList()
@@ -207,7 +206,6 @@ def NextPlayer():
         IncRound()
         idx = 0
     root[current_player_idx] = idx
-    Save()
     return GetCurrentPlayer()
 
 # Promps the user for a player and returns it
@@ -284,33 +282,36 @@ def Menu():
         if ans == "c":
             ShowCurrentPlayer()
         if ans == "a":
-            ListCharacters()
+            ShowAllPlayers()
             ShowCurrentPlayer()
         if ans == "n":
             NextPlayer()
+            Save()
             ShowCurrentPlayer()
         if ans == "h":
             hp = raw_input("Hit points: ")
             if hp != "" and hp != '\n':
                 SubtractHitPoints(int(hp))
-                ShowCurrentPlayer()
+            ShowCurrentPlayer()
         if ans == "e":
             cp = GetCurrentPlayer()
             EditNote(cp)
+            ShowCurrentPlayer()
         if ans == "E":
             cp = SelectCharacter()
             if cp:
                 EditNote(cp)
+            ShowCurrentPlayer()
         if ans == "u":
             try:
                 cp = GetCurrentPlayer()
                 os.system("/mnt/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe " + cp[url])
             except:
                 pass
+            ShowCurrentPlayer()
         if ans == "i":
             Initiative()
-        #if ans == 'l':
-            #Load()
+            Save()
         if ans == 'q':
             Save()
             return
