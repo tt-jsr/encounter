@@ -168,8 +168,7 @@ def GetCurrentPlayer():
     idx = root[current_player_idx]
     return GetPlayerList()[idx]
 
-def SubtractHitPoints(n):
-    cp = GetCurrentPlayer()
+def SubtractHitPoints(cp, n):
     cp[current_hp] -= n
 
 def Initiative():
@@ -195,7 +194,7 @@ def ShowAllPlayers():
         if cp == c:
             star="*"
         print "{6}{0} ac={1} hp:{2}/{3} {4}% init:{5}".format(c[name], c[ac], c[current_hp], c[max_hp], percent, c[initiative], star)
-        print GetNote(c)
+        print "    " + GetNote(c).replace('\n', '\n    ')
     raw_input()
 
 def NextPlayer():
@@ -275,7 +274,6 @@ def Menu():
         print "a. Show all players"
         print "i. Initiative"
         print "u. Open webpage"
-        #print "l. Load"
         print "q. quit"
         print "Enter=> "
         ans = raw_input()
@@ -289,9 +287,11 @@ def Menu():
             Save()
             ShowCurrentPlayer()
         if ans == "h":
-            hp = raw_input("Hit points: ")
-            if hp != "" and hp != '\n':
-                SubtractHitPoints(int(hp))
+            cp = SelectPlayer()
+            if cp:
+                hp = raw_input("Hit points: ")
+                if hp != "" and hp != '\n':
+                    SubtractHitPoints(cp, int(hp))
             ShowCurrentPlayer()
         if ans == "e":
             cp = GetCurrentPlayer()
