@@ -243,6 +243,14 @@ def SelectPlayer():
     except:
         return None
 
+def AddNote(cp, msg):
+    f = "{0}-notes.txt".format(cp[name])
+    try:
+        f = open(f, "a")
+        f.write("{0}\n".format(msg))
+        f.close()
+    except:
+        pass
 
 def EditNote(cp):
     path = "vim {0}-notes.txt".format(cp[name])
@@ -289,12 +297,13 @@ hp:{3}/{2} {5}%\n""".format(cp[name], cp[ac], cp[max_hp],cp[current_hp], GetRoun
 def PlayerMenu(cp):
     while True:
         ShowPlayer(cp)
-        print "e. Edit Player note"
-        print "h. Hit"
+        print " e. Edit Player note"
+        print " h. Hit"
         print "hp. Edit HP"
-        print "m. Edit Max HP"
+        print " m. Edit Max HP"
         print "ac. Edit AC"
-        print "q. quit"
+        print " s. Select Player"
+        print " q. quit"
         ans = raw_input("Enter=> ")
         if ans == "e":
             EditNote(cp)
@@ -302,18 +311,26 @@ def PlayerMenu(cp):
             hp = PromptInt("Hit points: ", None)
             if hp:
                 SubtractHitPoints(cp, hp)
+                AddNote(cp, "Round {0}: Hit for {1} points {2}/{3}".format(GetRound(), hp, cp[current_hp], cp[max_hp]))
         if ans == 'hp':
             new_hp = PromptInt("HP ({0}): ".format(cp[current_hp]), None)
             if new_hp:
                 cp[current_hp] = new_hp
+                AddNote(cp, "Round {0}: Current HP changed to {1}, {2}/{3}".format(GetRound(), cp[current_hp], cp[current_hp], cp[max_hp]))
         if ans == 'm':
             new_hp = PromptInt("Max HP ({0}): ".format(cp[max_hp]), None)
             if new_hp:
                 cp[max_hp] = new_hp
+                AddNote(cp, "Round {0}: Max HP changed to {1}".format(GetRound(), cp[max_hp]))
         if ans == 'ac':
             new_ac = PromptInt("AC ({0}): ".format(cp[ac]), None)
             if new_ac:
                 cp[ac] = new_ac
+                AddNote(cp, "Round {0}: AC changed to {1}".format(GetRound(), cp[ac]))
+        if ans == 's':
+            ncp = SelectPlayer()
+            if ncp:
+                cp = ncp
 
         if ans == 'q':
             Save()
@@ -323,7 +340,7 @@ def Menu():
     Load()
     while True:
         ShowCurrentPlayer()
-        print "n. Next player              i. Set initiative"
+        print "n. Next player               i. Set initiative"
         print "e. Edit Note                ap. Add player"
         print "a. Show all players         cp. Set Current Player"
         print "s. Select player"
