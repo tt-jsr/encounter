@@ -171,15 +171,30 @@ def GetCurrentPlayer():
 def SubtractHitPoints(cp, n):
     cp[current_hp] -= n
 
+def PromptInt(prompt, default):
+    ans = raw_input(prompt)
+    try:
+        return int(ans)
+    except:
+        return default
+
 def Initiative():
     for c in GetPlayerList():
-        ans = raw_input("{0}({1}): ".format(c[name], c[initiative]))
-        try:
-            n = int(ans)
+        n = PromptInt("{0}({1}): ".format(c[name], c[initiative]), None)
+        if n:
             c[initiative] = n
-        except:
-            pass
     GetPlayerList().sort(reverse=True, key=InitiativeSortFunc)
+
+def AddPlayer():
+    cp = {}
+    cp[name] = raw_input("Name: ")
+    cp[max_hp] = PromptInt("Max hp: ", 0)
+    cp[current_hp] = cp[max_hp]
+    cp[initiative] = PromptInt("Initiative: ", 1)
+    cp[ac] = PromptInt("AC: ", 0)
+    root[players].append(cp)
+    GetPlayerList().sort(reverse=True, key=InitiativeSortFunc)
+    return cp
 
 def ShowAllPlayers():
     ClearScreen()
@@ -207,6 +222,14 @@ def NextPlayer():
     root[current_player_idx] = idx
     return GetCurrentPlayer()
 
+def SetCurrentPlayer(idx):
+    cl = GetPlayerList()
+    if idx < 0 or idx >= len(cl):
+        print "Out of range"
+        return
+    root[current_player_idx] = idx
+    return GetCurrentPlayer()
+
 # Promps the user for a player and returns it
 def SelectPlayer():
     cl = GetPlayerList()
@@ -214,9 +237,8 @@ def SelectPlayer():
     for c in cl:
         print "{0}. {1}".format(counter, c[name])
         counter += 1
-    ans = raw_input("Enter=> ")
+    n = PromptInt("Enter=> ", None)
     try:
-        n = int(ans)
         return cl[n-1]
     except:
         return None
@@ -245,9 +267,11 @@ def GetNote(cp):
     return s
 
 def ShowCurrentPlayer():
+    ShowPlayer(GetCurrentPlayer())
+
+def ShowPlayer(cp):
     ClearScreen()
     CursorPos(1, 1)
-    cp = GetCurrentPlayer()
     cl = GetPlayerList()
     pos = "{0}/{1}".format(root[current_player_idx]+1, len(cl))
     percent = 0
@@ -262,56 +286,74 @@ hp:{3}/{2} {5}%\n""".format(cp[name], cp[ac], cp[max_hp],cp[current_hp], GetRoun
     print
     print
 
+def PlayerMenu(cp):
+    while True:
+        ShowPlayer(cp)
+        print "e. Edit Player note"
+        print "h. Hit"
+        print "hp. Edit HP"
+        print "m. Edit Max HP"
+        print "ac. Edit AC"
+        print "q. quit"
+        ans = raw_input("Enter=> ")
+        if ans == "e":
+            EditNote(cp)
+        if ans =='h':
+            hp = PromptInt("Hit points: ", None)
+            if hp:
+                SubtractHitPoints(cp, hp)
+        if ans == 'hp':
+            new_hp = PromptInt("HP ({0}): ".format(cp[current_hp]), None)
+            if new_hp:
+                cp[current_hp] = new_hp
+        if ans == 'm':
+            new_hp = PromptInt("Max HP ({0}): ".format(cp[max_hp]), None)
+            if new_hp:
+                cp[max_hp] = new_hp
+        if ans == 'ac':
+            new_ac = PromptInt("AC ({0}): ".format(cp[ac]), None)
+            if new_ac:
+                cp[ac] = new_ac
+
+        if ans == 'q':
+            Save()
+            return
+
 def Menu():
     Load()
-    ShowCurrentPlayer()
     while True:
-        print "c. Current player"
-        print "n. Next player"
-        print "h. Hit"
-        print "e. Edit Note"
-        print "E. Edit Player note"
-        print "a. Show all players"
-        print "i. Initiative"
-        print "u. Open webpage"
+        ShowCurrentPlayer()
+        print "n. Next player              i. Set initiative"
+        print "e. Edit Note                ap. Add player"
+        print "a. Show all players         cp. Set Current Player"
+        print "s. Select player"
         print "q. quit"
-        print "Enter=> "
-        ans = raw_input()
-        if ans == "c":
-            ShowCurrentPlayer()
+        ans = raw_input("Enter=> ")
         if ans == "a":
             ShowAllPlayers()
-            ShowCurrentPlayer()
+        if ans == "s":
+            cp = SelectPlayer()
+            if cp:
+                PlayerMenu(cp)
         if ans == "n":
             NextPlayer()
             Save()
-            ShowCurrentPlayer()
-        if ans == "h":
-            cp = SelectPlayer()
-            if cp:
-                hp = raw_input("Hit points: ")
-                if hp != "" and hp != '\n':
-                    SubtractHitPoints(cp, int(hp))
-            ShowCurrentPlayer()
         if ans == "e":
             cp = GetCurrentPlayer()
             EditNote(cp)
-            ShowCurrentPlayer()
-        if ans == "E":
-            cp = SelectPlayer()
-            if cp:
-                EditNote(cp)
-            ShowCurrentPlayer()
-        if ans == "u":
-            try:
-                cp = GetCurrentPlayer()
-                os.system("/mnt/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe " + cp[url])
-            except:
-                pass
-            ShowCurrentPlayer()
         if ans == "i":
             Initiative()
             Save()
+        if ans == 'cp':
+            cp = SelectPlayer();
+            if cp:
+                idx = root[players].index(cp)
+                root[current_player_idx] = idx
+        if ans == "ap":
+            cp = AddPlayer()
+            PlayerMenu(cp)
+
+
         if ans == 'q':
             Save()
             return
